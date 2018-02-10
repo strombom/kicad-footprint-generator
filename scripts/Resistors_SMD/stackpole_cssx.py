@@ -74,8 +74,8 @@ for resistor in resistors:
     fp.setDescription(description)
     
     # set general values
-    fp.append(Text(type='reference', text='REF**', at=[0,roundup(-y/2 - 1)], layer='F.SilkS'))
-    fp.append(Text(type='value', text=fp_name, at=[0,roundup(y/2 + 1.5)], layer='F.Fab'))
+    fp.append(Text(type='reference', text='REF**', at=[0,-roundup(y/2)-1], layer='F.SilkS'))
+    fp.append(Text(type='value', text=fp_name, at=[0,roundup(y/2)+1.5], layer='F.Fab'))
     
     #calculate pad center
     #pad-width pw
@@ -83,12 +83,12 @@ for resistor in resistors:
     c = g/2 + pw/2
     
     #add the component outline
-    fp.append(RectLine(start=[roundup(-l/2),roundup(-w/2)],end=[roundup(l/2),roundup(w/2)],layer='F.Fab',width=0.15))
+    fp.append(RectLine(start=[-roundup(l/2),-roundup(w/2)],end=[roundup(l/2),roundup(w/2)],layer='F.Fab',width=0.15))
     
     layers = ["F.Cu","F.Paste","F.Mask"]
     
     #add pads
-    fp.append(Pad(number=1,at=[roundup(-c),0],layers=layers,shape=Pad.SHAPE_RECT,type=Pad.TYPE_SMT,size=[roundup(pw),roundup(y)]))
+    fp.append(Pad(number=1,at=[-roundup(c),0],layers=layers,shape=Pad.SHAPE_RECT,type=Pad.TYPE_SMT,size=[roundup(pw),roundup(y)]))
     fp.append(Pad(number=2,at=[roundup(c),0],layers=layers,shape=Pad.SHAPE_RECT,type=Pad.TYPE_SMT,size=[roundup(pw),roundup(y)]))
     
     #add inductor courtyard
@@ -98,11 +98,24 @@ for resistor in resistors:
     fp.append(RectLine(start=[-cx,-cy],end=[cx,cy],offset=0.35,width=0.05,grid=0.05,layer="F.CrtYd"))
     
     #add lines
-    fp.append(Line(start=[roundup(-g/2+0.2),roundup(-w/2-0.1)],end=[roundup(g/2-0.2),roundup(-w/2-0.1)]))
-    fp.append(Line(start=[roundup(-g/2+0.2),roundup(w/2+0.1)],end=[roundup(g/2-0.2),roundup(w/2+0.1)]))
+    fp.append(Line(start=[-roundup(g/2)+0.2,-roundup(w/2)-0.1],end=[roundup(g/2)-0.2,-roundup(w/2)-0.1]))
+    fp.append(Line(start=[-roundup(g/2)+0.2,roundup(w/2)+0.1],end=[roundup(g/2)-0.2,roundup(w/2)+0.1]))
     
+    # Add refdes to fabrication layer
+    fontsize_max = 1.0
+    if fontsize_max * 5 > l:
+        fontsize_max = l / 5
+    if fontsize_max + 0.2 > w:
+        fontsize_max = w - 0.2
+    if fontsize_max < 0.1:
+        fontsize_max = 0.1
+    font_thickness = roundup(fontsize_max * 0.15)
+    fontsize = [fontsize_max, fontsize_max]
+
+    fp.append(Text(type='user', text='%R', size=fontsize, thickness=font_thickness, at=[0, 0], layer='F.Fab'))
+
     #Add a model
-    fp.append(Model(filename="Inductors.3dshapes/" + fp_name + ".wrl"))
+    fp.append(Model(filename="${KISYS3DMOD}/Resistor_SMD.3dshapes/" + fp_name + ".wrl"))
     
     #filename
     filename = output_dir + fp_name + ".kicad_mod"
